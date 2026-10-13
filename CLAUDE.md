@@ -24,19 +24,27 @@ first as its own change.
 
 ## Current state
 
-Roadmap **step 1 is done**: Tailwind is active, every route in the page map exists,
-both layouts render, and the build is clean. Everything below step 1 is still ahead.
+Roadmap **steps 1–2 are done** and **step 3's SQL is written but may not have been
+run yet**. Tailwind is active, every route in the page map exists, the navbar/footer
+and design system are real, and the build is clean.
 
-- **Pages are placeholders.** Almost every file in `src/pages` renders
-  `<PagePlaceholder>` listing what that page owes. Replacing one with a real
-  implementation is the expected next move, not a regression. `NotFound` is real.
-- **No Supabase client yet** — `src/lib` holds only `queryClient.js` and `format.js`.
-  No `src/hooks` or `src/store` directory exists yet; create them when first needed.
+Before writing any data code, check whether the database actually exists: if
+`.env` is missing or `src/lib/supabase.js` throws, the Supabase project has not
+been set up. `supabase/README.md` has the steps.
+
+- **Pages are still placeholders.** Every file in `src/pages` except `Home` and
+  `NotFound` renders `<PagePlaceholder>` listing what that page owes. Replacing one
+  with a real implementation is the expected next move, not a regression.
+- **`src/lib/sampleProducts.js` is temporary** and feeds the home page. Delete it at
+  step 5 once products come from Supabase through `src/hooks` (which does not exist
+  yet — create it when first needed).
 - **No auth and no route guards.** The routes the guide marks "login needed"
   (`/checkout`, `/order-success/:id`, `/orders`, `/profile`, `/wishlist`) and the
   entire `/admin` branch are currently open to anyone. Step 4 adds the guards.
-- **The header and footer are scaffolding**, not the real navigation. Step 2 replaces
-  them with the hamburger-on-mobile navbar, laptop bar and cart count badge.
+  Row Level Security already blocks the *data*; only the screens are unguarded.
+- **Product images are placeholder SVG.** `ProductArt` draws a category silhouette
+  on a tint hashed from the product id. Swap it for an `<img>` fed by
+  `products.image_url` once real photos are uploaded — the layout does not change.
 - `public/favicon.svg` and `public/icons.svg` are still Vite's artwork and need
   replacing before launch.
 
@@ -62,7 +70,13 @@ src/pages/      Customer route components.
 src/pages/admin/ Admin route components (the /admin branch).
 src/layouts/    CustomerLayout and AdminLayout — the two shells.
 src/components/ Presentational + small composed UI.
+supabase/       SQL migrations, seed data and setup notes. Not imported by
+                the app — run by hand in the Supabase SQL editor.
 ```
+
+The database schema lives in `supabase/migrations/`. **Changing a table means
+writing a new numbered migration file**, not editing an existing one — the old
+ones have already been run against the live project and are not re-applied.
 
 `src/App.jsx` is the single route table for the whole site and mirrors the page map
 in the feature guide. Customer routes nest inside `CustomerLayout`; everything under
@@ -151,6 +165,13 @@ These are correctness rules, not style preferences — breaking one is a bug.
 - **Admin access is enforced twice.** The React guard hides `/admin`, and Row Level
   Security blocks the data even if someone guesses the URL. The UI check alone is
   never sufficient.
+- **Customers have no insert policy on `orders`** — that is deliberate, not an
+  oversight. Adding one would let the browser name its own total.
+- **A customer cannot change their own `role`.** `profiles` grants update on only
+  `full_name` and `phone`; a policy alone would not stop `set role = 'admin'`.
+- **Qualify column names inside RLS subqueries** (`reviews.product_id`, not
+  `product_id`). An unqualified name resolves to the subquery's own table and
+  silently turns the check into a tautology.
 - **Validate twice.** The zod schema in the browser is for UX; database rules and
   constraints are the real enforcement.
 - Guests may browse and fill a cart (stored in the browser), but must sign in to check
