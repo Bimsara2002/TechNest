@@ -1,10 +1,11 @@
 /**
  * TEMPORARY sample data so the design can be built and reviewed before the
- * database exists. Delete this file at roadmap step 3/5, when products come
- * from Supabase through src/hooks.
+ * database exists. Delete this file at roadmap step 5, when products come from
+ * Supabase through src/hooks.
  *
  * Shapes match the `products` table in the feature guide, so swapping the
- * source does not change any component.
+ * source does not change any component. `image` keys into the local photo map
+ * in ProductImage; real rows will carry `image_url` instead, which wins.
  */
 
 export const categories = [
@@ -19,9 +20,22 @@ export const categories = [
 export const sampleProducts = [
   {
     id: 1,
+    name: "Galaxy S25 Ultra 5G",
+    brand: "Samsung",
+    category: "mobiles",
+    image: "galaxy-s25-ultra",
+    price: 445000,
+    discount_price: null,
+    stock: 6,
+    rating: 4.9,
+    reviews: 42,
+  },
+  {
+    id: 2,
     name: "Galaxy S24 Ultra 5G",
     brand: "Samsung",
     category: "mobiles",
+    image: "galaxy-s24-ultra",
     price: 389000,
     discount_price: 352000,
     stock: 7,
@@ -29,7 +43,43 @@ export const sampleProducts = [
     reviews: 126,
   },
   {
-    id: 2,
+    id: 3,
+    name: "Galaxy S23 Ultra 5G",
+    brand: "Samsung",
+    category: "mobiles",
+    image: "galaxy-s23-ultra",
+    price: 312000,
+    discount_price: 289000,
+    stock: 4,
+    rating: 4.8,
+    reviews: 203,
+  },
+  {
+    id: 4,
+    name: "Galaxy S22 Ultra 5G",
+    brand: "Samsung",
+    category: "mobiles",
+    image: "galaxy-s22-ultra",
+    price: 245000,
+    discount_price: 228000,
+    stock: 9,
+    rating: 4.6,
+    reviews: 318,
+  },
+  {
+    id: 5,
+    name: "Galaxy S21 Ultra 5G",
+    brand: "Samsung",
+    category: "mobiles",
+    image: "galaxy-s21-ultra",
+    price: 198000,
+    discount_price: 179000,
+    stock: 0,
+    rating: 4.5,
+    reviews: 441,
+  },
+  {
+    id: 6,
     name: "MacBook Air 13 M3",
     brand: "Apple",
     category: "laptops",
@@ -40,29 +90,7 @@ export const sampleProducts = [
     reviews: 83,
   },
   {
-    id: 3,
-    name: "Redmi Note 13 Pro",
-    brand: "Xiaomi",
-    category: "mobiles",
-    price: 97500,
-    discount_price: 89900,
-    stock: 23,
-    rating: 4.5,
-    reviews: 341,
-  },
-  {
-    id: 4,
-    name: "Pavilion 15 Core i5",
-    brand: "HP",
-    category: "laptops",
-    price: 268000,
-    discount_price: null,
-    stock: 2,
-    rating: 4.3,
-    reviews: 57,
-  },
-  {
-    id: 5,
+    id: 7,
     name: "Galaxy Tab S9 FE",
     brand: "Samsung",
     category: "tablets",
@@ -73,18 +101,18 @@ export const sampleProducts = [
     reviews: 48,
   },
   {
-    id: 6,
+    id: 8,
     name: "WH-1000XM5 Headphones",
     brand: "Sony",
     category: "audio",
     price: 134000,
     discount_price: null,
-    stock: 0,
+    stock: 2,
     rating: 4.9,
     reviews: 212,
   },
   {
-    id: 7,
+    id: 9,
     name: "Watch Series 9 45mm",
     brand: "Apple",
     category: "watches",
@@ -95,7 +123,7 @@ export const sampleProducts = [
     reviews: 95,
   },
   {
-    id: 8,
+    id: 10,
     name: "65W GaN Fast Charger",
     brand: "Anker",
     category: "accessories",

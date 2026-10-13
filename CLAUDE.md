@@ -42,9 +42,13 @@ been set up. `supabase/README.md` has the steps.
   (`/checkout`, `/order-success/:id`, `/orders`, `/profile`, `/wishlist`) and the
   entire `/admin` branch are currently open to anyone. Step 4 adds the guards.
   Row Level Security already blocks the *data*; only the screens are unguarded.
-- **Product images are placeholder SVG.** `ProductArt` draws a category silhouette
-  on a tint hashed from the product id. Swap it for an `<img>` fed by
-  `products.image_url` once real photos are uploaded — the layout does not change.
+- **All product pictures go through `ProductImage`**, which falls back in order:
+  `product.image_url` (Supabase Storage) → a bundled local photo → the drawn
+  `ProductArt` placeholder. Never put a bare `<img>` or `ProductArt` in a page;
+  use this component so the fallback chain stays in one place.
+- **Images are pre-optimised WebP in `src/assets/`.** New photos should be resized
+  and converted before committing (the hero went from 2 MB PNG to 44 KB WebP).
+  Do not commit multi-megabyte originals — most customers are on mobile data.
 - `public/favicon.svg` and `public/icons.svg` are still Vite's artwork and need
   replacing before launch.
 
@@ -109,6 +113,13 @@ sprite rather than inlining one-off SVGs.
   **1280px (laptop, `xl:`)**. Never introduce horizontal page scroll at any of them.
 - **Tap targets at least 44px tall** — `min-h-11` in Tailwind. Applies to every
   button, nav link and form control, because most customers are on a phone.
+- **Animation never drives React state.** The `Tilt` component and the hero
+  parallax write CSS custom properties from inside `requestAnimationFrame`; a
+  `setState` on mousemove or scroll would re-render on every pixel. Any new
+  pointer- or scroll-driven effect follows the same pattern.
+- **3D depth needs an unbroken `transform-3d` chain.** `overflow-hidden` on an
+  ancestor flattens the 3D context and `depth-*` children silently stop lifting,
+  so clip on an inner wrapper instead of the tilted card itself.
 - **Every page handles loading, error and empty states.** All three, explicitly — a
   page that renders only the happy path is incomplete. "Empty" means a real, distinct
   state (no products matched, cart is empty, no orders yet), not a blank area. With

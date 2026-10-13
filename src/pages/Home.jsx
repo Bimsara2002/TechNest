@@ -2,14 +2,14 @@ import { Link } from "react-router-dom";
 import Container from "../components/ui/Container.jsx";
 import Button from "../components/ui/Button.jsx";
 import Reveal from "../components/ui/Reveal.jsx";
-import HeroArt from "../components/art/HeroArt.jsx";
+import HomeHero from "../components/HomeHero.jsx";
 import CategoryTile from "../components/CategoryTile.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import { ChevronRightIcon } from "../components/icons.jsx";
 import { categories, sampleProducts } from "../lib/sampleProducts.js";
 
 /* Sample data for now - roadmap step 5 replaces these with Supabase queries. */
-const featured = sampleProducts.slice(0, 4);
+const phones = sampleProducts.filter((product) => product.category === "mobiles");
 const deals = sampleProducts.filter((product) => product.discount_price != null).slice(0, 4);
 
 function SectionHeading({ title, subtitle, to }) {
@@ -35,65 +35,7 @@ function SectionHeading({ title, subtitle, to }) {
 export default function Home() {
   return (
     <>
-      {/* ---- Hero ---------------------------------------------------- */}
-      <section className="relative overflow-hidden bg-brand-dark text-white">
-        {/* Decorative glow, kept behind the content */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-brand/25 blur-3xl"
-        />
-
-        <Container className="relative">
-          <div className="grid items-center gap-8 py-12 xl:grid-cols-2 xl:py-20">
-            <div className="animate-fade-up">
-              <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-brand-100 ring-1 ring-inset ring-white/15">
-                Island-wide delivery &middot; Cash on Delivery
-              </span>
-
-              <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl xl:text-5xl">
-                The tech you want,
-                <span className="block text-brand">delivered to your door.</span>
-              </h1>
-
-              <p className="mt-4 max-w-md text-base leading-relaxed text-slate-300">
-                Genuine mobiles, laptops, tablets and accessories with warranty on every
-                item. Pay cash when it arrives.
-              </p>
-
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Button to="/products" variant="primary">
-                  Shop now
-                </Button>
-                <Button
-                  to="/products?category=laptops"
-                  variant="secondary"
-                  className="bg-white/10 text-white ring-white/20 hover:bg-white/15 hover:text-white hover:ring-white/40"
-                >
-                  Browse laptops
-                </Button>
-              </div>
-
-              <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-white/10 pt-6">
-                {[
-                  { value: "500+", label: "Products" },
-                  { value: "24h", label: "Dispatch" },
-                  { value: "4.8★", label: "Customer rating" },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <dt className="sr-only">{stat.label}</dt>
-                    <dd className="text-xl font-bold sm:text-2xl">{stat.value}</dd>
-                    <p className="mt-0.5 text-xs text-slate-400">{stat.label}</p>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="animate-fade-in xl:justify-self-end">
-              <HeroArt className="mx-auto w-full max-w-md" />
-            </div>
-          </div>
-        </Container>
-      </section>
+      <HomeHero />
 
       {/* ---- Categories ---------------------------------------------- */}
       <Container className="py-12">
@@ -111,18 +53,18 @@ export default function Home() {
         </Reveal>
       </Container>
 
-      {/* ---- Featured ------------------------------------------------ */}
+      {/* ---- Phones -------------------------------------------------- */}
       <Container className="py-4">
         <Reveal>
           <SectionHeading
-            title="Featured this week"
-            subtitle="Picked by our team."
-            to="/products"
+            title="Galaxy S Ultra lineup"
+            subtitle="Five generations in stock, from the S21 to the brand new S25."
+            to="/products?category=mobiles"
           />
         </Reveal>
 
-        <Reveal className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
-          {featured.map((product) => (
+        <Reveal className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
+          {phones.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </Reveal>
