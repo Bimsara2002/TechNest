@@ -56,8 +56,25 @@ Vercel detects Vite and fills these in. Confirm rather than retype:
 | Output Directory | `dist` |
 | Install Command | `npm install` |
 | Root Directory | leave empty |
+| Node.js Version | **22.x** (Vite 8 needs 20.19+; `package.json` → `engines` pins this) |
 
-Leave *Environment Variables* empty for now.
+**Add the environment variables before you deploy**, under *Environment
+Variables* on this same screen. They are no longer optional: since auth was
+wired up, `src/lib/supabase.js` throws the moment the app starts if either one
+is missing, so the site loads as a blank page with an error in the console.
+
+| Name | Where to get it |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase → Project Settings → API → **Project URL** |
+| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → **anon / public** key |
+
+> The URL is the project origin and nothing else — no `/rest/v1`, no trailing
+> slash. The app refuses to start on that mistake and names the correct form.
+
+> Note the failure is at **runtime, not build time**. Vite does not execute your
+> code while bundling, so a missing variable still produces a green,
+> successful build and a broken site. A green deploy is not proof the
+> variables are set.
 
 Click **Deploy**.
 
