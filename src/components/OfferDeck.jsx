@@ -74,7 +74,27 @@ export default function OfferDeck() {
                 style={layerStyle(offset, count)}
                 className={`absolute inset-0 overflow-hidden rounded-3xl p-6 text-white shadow-lift transition-all duration-600 ease-out sm:p-8 ${tones[offer.tone] ?? tones.brand}`}
               >
-                <div className="flex h-full flex-col">
+                {/* Offer artwork. Masked into the gradient on its left edge so
+                    it blends rather than sitting on the card as a rectangle,
+                    and dimmed on phones where the text runs over it. */}
+                {offer.image ? (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 right-0 w-3/5 transform-3d sm:w-1/2"
+                  >
+                    <img
+                      src={offer.image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="depth-md size-full object-contain object-right p-4 opacity-20 drop-shadow-2xl mask-[linear-gradient(to_right,transparent,black_45%)] sm:opacity-95"
+                    />
+                  </div>
+                ) : null}
+
+                {/* Text sits above the artwork and is width-capped so the two
+                    never collide at any breakpoint. */}
+                <div className="relative flex h-full flex-col sm:max-w-[58%]">
                   <p className="text-xs font-bold uppercase tracking-widest text-white/70">
                     {offer.eyebrow}
                   </p>

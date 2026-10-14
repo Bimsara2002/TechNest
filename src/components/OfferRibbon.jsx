@@ -16,6 +16,18 @@ export default function OfferRibbon({ offer }) {
         to={offer.link}
         className="mesh-surface animate-gradient group flex flex-wrap items-center gap-x-4 gap-y-3 overflow-hidden rounded-2xl p-4 text-white shadow-card transform-3d sm:px-5"
       >
+        {/* Thumbnail from sm up — on a phone the strip is already full */}
+        {offer.image ? (
+          <img
+            src={offer.image}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            className="depth-sm hidden size-14 shrink-0 rounded-xl bg-white/10 object-contain p-1.5 sm:block"
+          />
+        ) : null}
+
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold uppercase tracking-widest text-white/70">
             {offer.eyebrow}

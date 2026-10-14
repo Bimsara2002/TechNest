@@ -8,11 +8,17 @@
  * End times are relative to page load so the countdowns always show something
  * live while the backend is still ahead. Real rows carry absolute timestamps.
  */
+import galaxyS24 from "../assets/products/galaxy-s24-ultra.webp";
+import acerNitro from "../assets/pool/brand-acer.webp";
+import iphone17Pro from "../assets/products/iphone-17-pro.webp";
+import deliveryBox from "../assets/offers/delivery.webp";
+
 const hoursFromNow = (hours) => new Date(Date.now() + hours * 3600_000).toISOString();
 
 export const offers = [
   {
     id: "flash",
+    image: galaxyS24,
     kind: "flash",
     eyebrow: "Flash deal",
     headline: "Galaxy S24 Ultra",
@@ -25,6 +31,7 @@ export const offers = [
   },
   {
     id: "gaming",
+    image: acerNitro,
     kind: "category",
     eyebrow: "Gaming week",
     headline: "RTX laptops from Rs. 298,000",
@@ -36,6 +43,7 @@ export const offers = [
   },
   {
     id: "coupon",
+    image: iphone17Pro,
     kind: "coupon",
     eyebrow: "New customer",
     headline: "10% off your first order",
@@ -48,6 +56,7 @@ export const offers = [
   },
   {
     id: "delivery",
+    image: deliveryBox,
     kind: "shipping",
     eyebrow: "Always on",
     headline: "Free delivery over Rs. 50,000",
