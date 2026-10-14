@@ -1,4 +1,6 @@
 import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { settingsSchema } from "../../lib/settingsSchema.js";
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import Reveal3D from "../../components/ui/Reveal3D.jsx";
 import Button from "../../components/ui/Button.jsx";
@@ -20,7 +22,13 @@ function Panel({ title, description, children }) {
   );
 }
 
-function Toggle({ label, description, checked, onChange, disabled }) {
+/**
+ * Spreads the remaining props onto the input so it can take a react-hook-form
+ * `register()` directly. An earlier version took a `checked` prop and an
+ * onChange that only raised a toast, which meant the value never actually
+ * changed and the "keep one payment method on" rule could never fire.
+ */
+function Toggle({ label, description, disabled, ...rest }) {
   return (
     <label
       className={`flex items-start gap-3 rounded-xl p-3 transition-colors ${
@@ -29,10 +37,9 @@ function Toggle({ label, description, checked, onChange, disabled }) {
     >
       <input
         type="checkbox"
-        checked={checked}
-        onChange={onChange}
         disabled={disabled}
         className="mt-0.5 size-4 rounded border-slate-300 text-brand focus:ring-brand"
+        {...rest}
       />
       <span className="text-sm">
         <span className="font-medium">{label}</span>
@@ -44,7 +51,14 @@ function Toggle({ label, description, checked, onChange, disabled }) {
 
 export default function Settings() {
   const toast = useToast();
-  const { register, handleSubmit, control } = useForm({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(settingsSchema),
+    mode: "onBlur",
     defaultValues: sampleSettings,
   });
 
@@ -70,18 +84,18 @@ export default function Settings() {
             <Panel title="Shop details" description="Shown in the footer and on invoices.">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <Field label="Shop name">
+                  <Field label="Shop name" error={errors.shop_name?.message} required>
                     <Input {...register("shop_name")} />
                   </Field>
                 </div>
-                <Field label="Phone">
+                <Field label="Phone" error={errors.shop_phone?.message} required>
                   <Input {...register("shop_phone")} type="tel" />
                 </Field>
-                <Field label="Email">
+                <Field label="Email" error={errors.shop_email?.message} required>
                   <Input {...register("shop_email")} type="email" />
                 </Field>
                 <div className="sm:col-span-2">
-                  <Field label="Address">
+                  <Field label="Address" error={errors.shop_address?.message} required>
                     <Input {...register("shop_address")} />
                   </Field>
                 </div>
@@ -93,10 +107,10 @@ export default function Settings() {
               description="Applied at checkout and shown in the cart summary."
             >
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Delivery fee (Rs.)">
+                <Field label="Delivery fee (Rs.)" error={errors.delivery_fee?.message} required>
                   <Input type="number" min="0" {...register("delivery_fee")} />
                 </Field>
-                <Field label="Free delivery from (Rs.)">
+                <Field label="Free delivery from (Rs.)" error={errors.free_delivery_from?.message} required>
                   <Input type="number" min="0" {...register("free_delivery_from")} />
                 </Field>
               </div>
@@ -117,31 +131,31 @@ export default function Settings() {
                 <Toggle
                   label="Cash on Delivery"
                   description="The main method. Customers pay the courier."
-                  checked={Boolean(values.cod_enabled)}
-                  onChange={(event) =>
-                    toast(
-                      event.target.checked
-                        ? "Cash on Delivery stays on until Phase 2"
-                        : "Cash on Delivery cannot be turned off yet",
-                      "info",
-                    )
-                  }
+                  {...register("cod_enabled")}
                 />
                 <Toggle
                   label="PayHere card payment"
                   description="Needs PayHere credentials in a Supabase Edge Function."
-                  checked={Boolean(values.payhere_enabled)}
                   disabled
-                  onChange={() => {}}
+                  {...register("payhere_enabled")}
                 />
                 <Toggle
                   label="Bank transfer"
                   description="Customer uploads a payment slip for you to verify."
-                  checked={Boolean(values.bank_transfer_enabled)}
                   disabled
-                  onChange={() => {}}
+                  {...register("bank_transfer_enabled")}
                 />
               </div>
+
+              {/* Guards the schema rule that at least one method stays on */}
+              {errors.cod_enabled ? (
+                <p
+                  role="alert"
+                  className="animate-shake mt-3 rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-200"
+                >
+                  {errors.cod_enabled.message}
+                </p>
+              ) : null}
             </Panel>
           </div>
 
@@ -163,7 +177,9 @@ export default function Settings() {
         </div>
 
         <div className="sticky bottom-0 -mx-4 border-t border-slate-200 bg-white/95 p-4 backdrop-blur-md sm:-mx-6 xl:-mx-8">
-          <Button type="submit">Save settings</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving…" : "Save settings"}
+          </Button>
         </div>
       </form>
     </div>

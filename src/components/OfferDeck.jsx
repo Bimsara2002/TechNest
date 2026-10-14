@@ -58,7 +58,10 @@ export default function OfferDeck() {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div className="stage-3d relative h-72 sm:h-64">
+      {/* Taller on phones: the coupon card stacks eyebrow, headline, subline,
+          a code button, a CTA and a countdown, which overflowed a 288px box
+          at 375px. */}
+      <div className="stage-3d relative h-96 sm:h-72 xl:h-64">
         <div className="absolute inset-0 transform-3d">
           {offers.map((offer, index) => {
             // Distance forward in the deck, wrapping at the end.
@@ -76,7 +79,7 @@ export default function OfferDeck() {
                     {offer.eyebrow}
                   </p>
 
-                  <h3 className="mt-2 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                  <h3 className="mt-2 text-xl font-bold leading-tight tracking-tight sm:text-2xl xl:text-3xl">
                     {offer.headline}
                   </h3>
 

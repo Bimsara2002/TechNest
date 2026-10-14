@@ -79,9 +79,20 @@ export default function Footer() {
   const [email, setEmail] = useState("");
   const toast = useToast();
 
+  const [error, setError] = useState("");
+
   const subscribe = (event) => {
     event.preventDefault();
-    if (!email.trim()) return;
+
+    const value = email.trim();
+    if (!value) return setError("Enter your email address");
+    // Deliberately loose: the strict RFC pattern rejects valid addresses, and
+    // the real check is whether the confirmation email arrives.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
+      return setError("That does not look like an email address");
+    }
+
+    setError("");
     // Step 10 writes this to the database; for now it acknowledges the intent
     // rather than pretending a list exists.
     toast("Thanks — we will email you when deals land");
@@ -129,26 +140,44 @@ export default function Footer() {
               </p>
             </div>
 
-            <form onSubmit={subscribe} className="flex w-full max-w-sm gap-2">
+            <form onSubmit={subscribe} noValidate className="w-full max-w-sm">
               <label className="sr-only" htmlFor="newsletter-email">
                 Email address
               </label>
-              <input
-                id="newsletter-email"
-                type="email"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.lk"
-                className="h-11 min-w-0 flex-1 rounded-xl bg-white/10 px-3.5 text-sm text-white placeholder:text-slate-500 transition-all focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-brand"
-              />
-              <button
-                type="submit"
-                className="group inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition-all hover:bg-brand-700 active:scale-95"
-              >
-                Join
-                <ChevronRightIcon className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-              </button>
+              <div className="flex gap-2">
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (error) setError("");
+                  }}
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={error ? "newsletter-error" : undefined}
+                  placeholder="you@example.lk"
+                  className={`h-11 min-w-0 flex-1 rounded-xl bg-white/10 px-3.5 text-sm text-white placeholder:text-slate-500 transition-all focus:bg-white/15 focus:outline-none focus:ring-2 ${
+                    error ? "ring-2 ring-rose-400" : "focus:ring-brand"
+                  }`}
+                />
+                <button
+                  type="submit"
+                  className="group inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl bg-brand px-4 text-sm font-semibold text-white transition-all hover:bg-brand-700 active:scale-95"
+                >
+                  Join
+                  <ChevronRightIcon className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </button>
+              </div>
+
+              {error ? (
+                <p
+                  id="newsletter-error"
+                  role="alert"
+                  className="animate-shake mt-2 text-xs font-medium text-rose-300"
+                >
+                  {error}
+                </p>
+              ) : null}
             </form>
           </div>
         </Reveal>
