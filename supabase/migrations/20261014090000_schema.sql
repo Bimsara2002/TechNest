@@ -1,5 +1,5 @@
 -- TechNest schema
--- Roadmap step 3. Run this first, then 0002_policies.sql, then 0003_storage.sql.
+-- Roadmap step 3. Run this first, then 20261014090100_policies.sql, then 20261014090200_storage.sql.
 --
 -- Money is numeric(12,2), never float: binary floating point cannot represent
 -- decimal currency exactly and the rounding error shows up in order totals.
@@ -24,7 +24,7 @@ create type public.coupon_type as enum ('percentage', 'fixed');
 
 -- One row per signed-in user, created automatically by the trigger below.
 -- `role` lives here and is what is_admin() reads, so it is protected by
--- column-level grants in 0002_policies.sql - a customer must never be able to
+-- column-level grants in 20261014090100_policies.sql - a customer must never be able to
 -- promote themselves.
 create table public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,

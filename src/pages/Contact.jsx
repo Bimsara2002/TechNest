@@ -5,8 +5,10 @@ import Breadcrumbs from "../components/ui/Breadcrumbs.jsx";
 import Button from "../components/ui/Button.jsx";
 import Reveal3D from "../components/ui/Reveal3D.jsx";
 import Field, { Input, Textarea } from "../components/ui/Field.jsx";
+import { AuthError } from "../components/AuthShell.jsx";
 import { MailIcon, PhoneIcon, TruckIcon } from "../components/icons.jsx";
 import { contactSchema } from "../lib/authSchemas.js";
+import { useSendMessage } from "../hooks/useContact.js";
 import { useToast } from "../store/toastStore.js";
 
 const channels = [
@@ -34,19 +36,24 @@ const channels = [
 
 export default function Contact() {
   const toast = useToast();
+  const send = useSendMessage();
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({ resolver: zodResolver(contactSchema), mode: "onBlur" });
 
-  const onSubmit = () => {
-    // Step 10 writes this to the `messages` table, which already allows
-    // inserts from guests.
-    toast("Thanks! Your message is on its way.");
-    reset();
-  };
+  // Writes straight to the `messages` table, which allows inserts from guests
+  // so nobody has to make an account to ask a question. It then shows up on
+  // /admin/messages.
+  const onSubmit = (values) =>
+    send.mutate(values, {
+      onSuccess: () => {
+        toast("Thanks! Your message is on its way.");
+        reset();
+      },
+    });
 
   return (
     <Container className="py-6 xl:py-10">
@@ -63,6 +70,8 @@ export default function Contact() {
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_340px] xl:items-start">
         <Reveal3D className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 sm:p-6">
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+            <AuthError error={send.error} />
+
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Your name" error={errors.name?.message} required>
                 <Input {...register("name")} autoComplete="name" />
@@ -82,8 +91,8 @@ export default function Contact() {
               <Textarea rows={6} {...register("message")} />
             </Field>
 
-            <Button type="submit" disabled={isSubmitting}>
-              Send message
+            <Button type="submit" disabled={send.isPending}>
+              {send.isPending ? "Sending…" : "Send message"}
             </Button>
           </form>
         </Reveal3D>

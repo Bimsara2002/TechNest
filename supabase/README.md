@@ -11,21 +11,43 @@ Roadmap step 3. Run these once to get from an empty Supabase project to
    feels for local customers.
 2. Save the database password somewhere safe. It is not the same as the API keys.
 
-## 2. Run the SQL, in order
+## 2. Apply the SQL
 
-Open **SQL Editor** in the dashboard and run each file's contents as a new query,
-in this order. Order matters: policies reference tables, storage references
-`is_admin()`.
+The Supabase CLI is a dev dependency, so there is nothing to install globally.
+
+```bash
+npm run db:login    # opens a browser, stores an access token
+npm run db:link     # links this folder to the project, asks for the DB password
+npm run db:seed     # applies every migration, then seed.sql
+```
+
+What lands, in order — the order matters, because policies reference tables and
+storage references `is_admin()`:
 
 | # | File | What it does |
 | --- | --- | --- |
-| 1 | `migrations/0001_schema.sql` | Tables, enums, indexes, the new-user trigger, `is_admin()` |
-| 2 | `migrations/0002_policies.sql` | Row Level Security on every table |
-| 3 | `migrations/0003_storage.sql` | `product-images` bucket and its policies |
-| 4 | `seed.sql` | 6 categories, 11 brands, 20 products, shop settings |
+| 1 | `migrations/20261014090000_schema.sql` | Tables, enums, indexes, the new-user trigger, `is_admin()` |
+| 2 | `migrations/20261014090100_policies.sql` | Row Level Security on every table |
+| 3 | `migrations/20261014090200_storage.sql` | `product-images` bucket and its policies |
+| 4 | `migrations/20261014090300_admin_accounts.sql` | The admin allowlist, `profiles.email`, admin-only role/block functions |
+| 5 | `seed.sql` | 6 categories, 11 brands, 20 products, shop settings |
 
-Each file is safe to re-run except the migrations, which will complain that
-objects already exist. `seed.sql` is fully idempotent.
+After the first run use `npm run db:push`, which applies only migrations the
+remote has not seen. `npm run db:status` lists what is applied where.
+
+**Migration file names must keep the 14-digit timestamp prefix.** That is how
+the CLI orders them and records them in `supabase_migrations.schema_migrations`.
+A file named `0001_schema.sql` can be skipped without an error, which looks like
+`db push` succeeding while nothing happens.
+
+<details>
+<summary>No CLI? Paste them by hand instead</summary>
+
+Open **SQL Editor** in the dashboard and run each file's contents as a new
+query, in the order of the table above. Everything works the same; you just
+have to track yourself what has already been run, and `schema_migrations` stays
+empty, so a later `db push` would try to apply them again.
+</details>
 
 ## 3. Connect the app
 
@@ -33,6 +55,14 @@ In the dashboard go to **Project Settings → API** and copy:
 
 - **Project URL** → `VITE_SUPABASE_URL`
 - **anon / public** key → `VITE_SUPABASE_ANON_KEY`
+
+> `VITE_SUPABASE_URL` is the project URL **and nothing else** —
+> `https://abc123.supabase.co`, with no `/rest/v1` and no trailing slash.
+> supabase-js appends its own paths, so a URL with `/rest/v1` on the end sends
+> every query to `/rest/v1/rest/v1/…` and every sign-in to
+> `/rest/v1/auth/v1/…`. They all fail with *"Invalid path specified in request
+> URL"*, which reads like a bad key rather than a bad URL.
+> `src/lib/supabase.js` now refuses to start on that mistake.
 
 ```bash
 cp .env.example .env
@@ -47,16 +77,12 @@ Restart `npm run dev` afterwards — Vite only reads `.env` at startup.
 
 ## 4. Make yourself an admin
 
-Every new account is a `customer`. There is no UI to promote someone, by
-design — do it once in the SQL editor:
+Handled by `20261014090300_admin_accounts.sql`: the shop's address is in the
+`admin_allowlist` table, and the sign-up trigger reads it, so registering with
+that address gives you `role = 'admin'` immediately. Nothing to run by hand.
 
-```sql
-update public.profiles
-set role = 'admin'
-where id = (select id from auth.users where email = 'you@example.com');
-```
-
-Sign up through the app first, otherwise there is no row to update.
+See [ADMIN.md](../ADMIN.md) for the whole walkthrough, including how to add a
+second admin.
 
 ## 5. Check the rules actually work
 
@@ -86,7 +112,7 @@ rewrite history.
 
 **Role escalation is blocked by column grants, not just policies.** A policy
 saying "you may update your own profile row" would otherwise allow
-`set role = 'admin'`. `0002_policies.sql` grants update on only `full_name` and
+`set role = 'admin'`. `20261014090100_policies.sql` grants update on only `full_name` and
 `phone`.
 
 **`is_admin()` is `SECURITY DEFINER`** so that reading `profiles.role` from

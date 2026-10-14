@@ -1,21 +1,21 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import AuthShell, { AuthNotice } from "../components/AuthShell.jsx";
+import AuthShell, { AuthError, AuthSuccess } from "../components/AuthShell.jsx";
 import Button from "../components/ui/Button.jsx";
 import Field, { Input } from "../components/ui/Field.jsx";
 import { forgotSchema } from "../lib/authSchemas.js";
-import { useToast } from "../store/toastStore.js";
+import { usePasswordReset } from "../hooks/useAuth.js";
 
 export default function ForgotPassword() {
-  const toast = useToast();
+  const reset = usePasswordReset();
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    getValues,
+    formState: { errors },
   } = useForm({ resolver: zodResolver(forgotSchema), mode: "onBlur" });
-
-  const onSubmit = () => toast("Password reset arrives in roadmap step 4", "info");
 
   return (
     <AuthShell
@@ -27,17 +27,30 @@ export default function ForgotPassword() {
         </Link>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-        <Field label="Email" error={errors.email?.message} required>
-          <Input {...register("email")} type="email" autoComplete="email" />
-        </Field>
+      {reset.isSuccess ? (
+        // Worded so it does not reveal whether that address has an account:
+        // "no such user" would let anyone test which emails are registered.
+        <AuthSuccess title={`If ${getValues("email")} has an account, the link is on its way`}>
+          Open it on this device and you will be asked to choose a new password.
+          Check your spam folder if it has not arrived in a few minutes.
+        </AuthSuccess>
+      ) : (
+        <form
+          onSubmit={handleSubmit(({ email }) => reset.mutate(email))}
+          noValidate
+          className="space-y-4"
+        >
+          <AuthError error={reset.error} />
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          Send reset link
-        </Button>
-      </form>
+          <Field label="Email" error={errors.email?.message} required>
+            <Input {...register("email")} type="email" autoComplete="email" />
+          </Field>
 
-      <AuthNotice />
+          <Button type="submit" disabled={reset.isPending} className="w-full">
+            {reset.isPending ? "Sending…" : "Send reset link"}
+          </Button>
+        </form>
+      )}
     </AuthShell>
   );
 }

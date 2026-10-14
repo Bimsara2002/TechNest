@@ -1,11 +1,13 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import Toaster from "../components/ui/Toaster.jsx";
+import { useAuth, useSignOut } from "../hooks/useAuth.js";
+import { useToast } from "../store/toastStore.js";
 
 /**
  * Shell for /admin. Sidebar on laptop, horizontal scrolling tab strip on mobile.
  *
- * No access control yet - roadmap step 4 adds the admin guard that redirects
- * non-admins, backed by Row Level Security in the database.
+ * Only ever rendered inside <RequireAdmin>, so it can assume an admin is
+ * signed in; it does not re-check. The database checks again on every query.
  */
 
 const adminLinks = [
@@ -28,10 +30,57 @@ const linkClass = ({ isActive }) =>
     isActive ? "bg-brand text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"
   }`;
 
+/**
+ * Who is signed in, and the way out. Pinned to the bottom of the sidebar on
+ * laptop; on a phone it follows the tab strip, where it is out of the way but
+ * still reachable without hunting for it.
+ */
+function AdminAccount() {
+  const { profile, user } = useAuth();
+  const signOut = useSignOut();
+  const toast = useToast();
+
+  const name = profile?.full_name?.trim() || "Admin";
+  const email = profile?.email ?? user?.email ?? "";
+
+  return (
+    <div className="border-t border-white/10 px-3 py-3 xl:mt-auto">
+      <div className="flex items-center gap-2.5">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold uppercase">
+          {name.charAt(0)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{name}</p>
+          <p className="truncate text-xs text-slate-400">{email}</p>
+        </div>
+      </div>
+
+      <div className="mt-2 flex gap-1">
+        <Link
+          to="/"
+          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md bg-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/15"
+        >
+          View shop
+        </Link>
+        <button
+          type="button"
+          disabled={signOut.isPending}
+          onClick={() =>
+            signOut.mutate(undefined, { onSuccess: () => toast("Signed out") })
+          }
+          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md bg-white/10 px-3 text-xs font-semibold transition-colors hover:bg-rose-500 disabled:opacity-50"
+        >
+          {signOut.isPending ? "Signing out…" : "Sign out"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminLayout() {
   return (
     <div className="flex min-h-dvh flex-col xl:flex-row">
-      <header className="bg-brand-dark text-white xl:w-64 xl:shrink-0">
+      <header className="flex flex-col bg-brand-dark text-white xl:w-64 xl:shrink-0">
         <div className="mx-auto flex w-full max-w-6xl items-center px-4 py-2 xl:max-w-none xl:px-3">
           <Link
             to="/admin"
@@ -56,6 +105,8 @@ export default function AdminLayout() {
             ))}
           </ul>
         </nav>
+
+        <AdminAccount />
       </header>
 
       <main className="flex-1 bg-slate-50">

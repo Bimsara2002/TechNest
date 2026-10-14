@@ -2,7 +2,10 @@ import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import CustomerLayout from "./layouts/CustomerLayout.jsx";
+import RequireAuth from "./components/auth/RequireAuth.jsx";
+import RequireAdmin from "./components/auth/RequireAdmin.jsx";
 import { LoadingState } from "./components/ui/States.jsx";
+import { useAuthSync } from "./hooks/useAuth.js";
 
 // Eager: the landing page and the main browse path, which most visits hit
 // first. Loading these on demand would add a spinner to the first paint.
@@ -25,6 +28,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
 const Register = lazy(() => import("./pages/Register.jsx"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword.jsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Faq = lazy(() => import("./pages/Faq.jsx"));
@@ -49,11 +53,18 @@ const Settings = lazy(() => import("./pages/admin/Settings.jsx"));
 /**
  * Route table for the whole site, mirroring the page map in the feature guide.
  *
- * Auth is not wired yet: routes marked "login needed" in the guide
- * (/checkout, /orders, /profile, /wishlist, /order-success) and the whole
- * /admin branch are currently open. Roadmap step 4 wraps them in guards.
+ * The routes the guide marks "login needed" sit inside <RequireAuth>, and the
+ * whole /admin branch inside <RequireAdmin>. Both are layout routes, so the
+ * check is written once per branch rather than repeated in every page - and a
+ * new page added inside a branch is guarded by default instead of by memory.
+ *
+ * Guards hide screens. Row Level Security is what protects the data.
  */
 export default function App() {
+  // One subscription to Supabase Auth for the app: keeps the session cache in
+  // step with sign-outs and token refreshes, including those in another tab.
+  useAuthSync();
+
   return (
     <Suspense fallback={<LoadingState label="Loading page" />}>
       <Routes>
@@ -63,18 +74,21 @@ export default function App() {
           <Route path="products/:id" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
 
-          {/* Login needed (step 4) */}
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="order-success/:id" element={<OrderSuccess />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="orders/:id" element={<OrderDetail />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="wishlist" element={<Wishlist />} />
+          {/* Login needed */}
+          <Route element={<RequireAuth />}>
+            <Route path="checkout" element={<Checkout />} />
+            <Route path="order-success/:id" element={<OrderSuccess />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="orders/:id" element={<OrderDetail />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="wishlist" element={<Wishlist />} />
+          </Route>
 
           {/* Account */}
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
 
           {/* Information */}
           <Route path="contact" element={<Contact />} />
@@ -83,8 +97,16 @@ export default function App() {
           <Route path="policies" element={<Policies />} />
         </Route>
 
-        {/* Admin only (guard added in step 4) */}
-        <Route path="/admin" element={<AdminLayout />}>
+        {/* Admin only. RequireAdmin renders the layout itself so a customer who
+            guesses the URL never sees the admin chrome, only the refusal. */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminLayout />
+            </RequireAdmin>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="products/new" element={<ProductNew />} />

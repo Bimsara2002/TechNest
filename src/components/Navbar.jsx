@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import Container from "./ui/Container.jsx";
-import {
-  CartIcon,
-  CloseIcon,
-  Logo,
-  MenuIcon,
-  SearchIcon,
-  UserIcon,
-} from "./icons.jsx";
+import AccountMenu from "./AccountMenu.jsx";
+import { CartIcon, CloseIcon, Logo, MenuIcon, SearchIcon } from "./icons.jsx";
 import { useCartCount } from "../store/cartStore.js";
+import { useAuth, useSignOut } from "../hooks/useAuth.js";
+import { useToast } from "../store/toastStore.js";
 
 const links = [
   { to: "/products", label: "Shop" },
@@ -19,11 +15,20 @@ const links = [
   { to: "/contact", label: "Contact" },
 ];
 
-const drawerLinks = [
+/**
+ * The phone drawer carries the account links too, since it is the only
+ * navigation at that width - there is no room for a separate account menu.
+ */
+const drawerLinksFor = ({ isSignedIn, isAdmin }) => [
   ...links,
-  { to: "/orders", label: "My orders" },
-  { to: "/wishlist", label: "Wishlist" },
-  { to: "/login", label: "Sign in" },
+  ...(isAdmin ? [{ to: "/admin", label: "Admin dashboard" }] : []),
+  ...(isSignedIn
+    ? [
+        { to: "/orders", label: "My orders" },
+        { to: "/wishlist", label: "Wishlist" },
+        { to: "/profile", label: "Profile" },
+      ]
+    : [{ to: "/login", label: "Sign in" }, { to: "/register", label: "Create account" }]),
 ];
 
 function CartButton({ count, className = "" }) {
@@ -73,6 +78,10 @@ export default function Navbar() {
   const count = useCartCount();
   const location = useLocation();
   const navigate = useNavigate();
+  const toast = useToast();
+  const { isSignedIn, isAdmin } = useAuth();
+  const signOut = useSignOut();
+  const drawerLinks = drawerLinksFor({ isSignedIn, isAdmin });
 
   // Close the drawer whenever the route changes, so tapping a link never
   // leaves the overlay covering the page it just opened. Derived during render
@@ -190,13 +199,7 @@ export default function Navbar() {
           </form>
 
           <div className="ml-auto flex items-center gap-1 md:ml-2">
-            <Link
-              to="/login"
-              className="hidden size-11 items-center justify-center rounded-xl transition-all hover:bg-white/10 active:scale-90 md:inline-flex"
-              aria-label="Account"
-            >
-              <UserIcon className="size-5" />
-            </Link>
+            <AccountMenu />
 
             <CartButton count={count} />
 
@@ -295,9 +298,27 @@ export default function Navbar() {
               ))}
             </ul>
 
-            <p className="border-t border-white/10 px-4 py-3 text-xs text-slate-400">
-              Cash on Delivery across Sri Lanka
-            </p>
+            <div className="border-t border-white/10 px-4 py-3">
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  disabled={signOut.isPending}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    signOut.mutate(undefined, {
+                      onSuccess: () => toast("Signed out"),
+                    });
+                  }}
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-white/10 px-3 text-sm font-semibold transition-colors hover:bg-rose-500 disabled:opacity-50"
+                >
+                  {signOut.isPending ? "Signing out…" : "Sign out"}
+                </button>
+              ) : null}
+
+              <p className="mt-2 text-xs text-slate-400">
+                Cash on Delivery across Sri Lanka
+              </p>
+            </div>
           </nav>
         </div>
       ) : null}

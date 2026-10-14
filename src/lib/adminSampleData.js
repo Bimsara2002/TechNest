@@ -1,65 +1,15 @@
 /**
- * TEMPORARY content for the admin screens that have no customer-facing source
- * yet. Replaced by the coupons, banners, reviews, messages and settings tables
- * at roadmap step 9 / Phase 2.
+ * TEMPORARY content for the two admin screens that cannot read real rows yet.
+ *
+ * Coupons, banners, messages, customers and settings now come from Supabase
+ * through src/lib/admin.js. What is left here needs the catalogue to exist in
+ * the database first:
+ *
+ * - sampleReviews: a review belongs to a product and a delivered order, so
+ *   there can be none until roadmap step 5 seeds products and step 8 writes
+ *   orders.
+ * - monthlyRevenue / topSellers: both are aggregates over real orders.
  */
-
-export const sampleCoupons = [
-  {
-    id: 1,
-    code: "NEWNEST10",
-    type: "percentage",
-    value: 10,
-    expires_at: "2026-12-31T00:00:00Z",
-    usage_limit: 200,
-    used_count: 47,
-    is_active: true,
-  },
-  {
-    id: 2,
-    code: "FREEDEL",
-    type: "fixed",
-    value: 450,
-    expires_at: "2026-11-30T00:00:00Z",
-    usage_limit: null,
-    used_count: 118,
-    is_active: true,
-  },
-  {
-    id: 3,
-    code: "AVURUDU24",
-    type: "percentage",
-    value: 15,
-    expires_at: "2026-04-20T00:00:00Z",
-    usage_limit: 500,
-    used_count: 500,
-    is_active: false,
-  },
-];
-
-export const sampleBanners = [
-  {
-    id: 1,
-    headline: "The tech you want, delivered",
-    link: "/products",
-    sort_order: 1,
-    is_active: true,
-  },
-  {
-    id: 2,
-    headline: "Galaxy S Ultra lineup",
-    link: "/products?category=mobiles",
-    sort_order: 2,
-    is_active: true,
-  },
-  {
-    id: 3,
-    headline: "Gaming laptops from Rs. 298,000",
-    link: "/products?category=laptops",
-    sort_order: 3,
-    is_active: false,
-  },
-];
 
 export const sampleReviews = [
   {
@@ -92,47 +42,6 @@ export const sampleReviews = [
     created_at: "2026-10-02T18:45:00Z",
   },
 ];
-
-export const sampleMessages = [
-  {
-    id: "m1",
-    name: "Dinuka Perera",
-    email: "dinuka@example.lk",
-    message:
-      "Do you have the Legion Pro 5i in the 32GB configuration, and can you deliver to Matara this week?",
-    is_read: false,
-    created_at: "2026-10-12T11:30:00Z",
-  },
-  {
-    id: "m2",
-    name: "Harini S.",
-    email: "harini@example.lk",
-    message:
-      "My order TN-00042 arrived yesterday. The warranty card was missing from the box, can you send it?",
-    is_read: false,
-    created_at: "2026-10-11T16:12:00Z",
-  },
-  {
-    id: "m3",
-    name: "Kasun A.",
-    email: "kasun@example.lk",
-    message: "Is the S23 Ultra price negotiable if I buy two?",
-    is_read: true,
-    created_at: "2026-10-08T08:05:00Z",
-  },
-];
-
-export const sampleSettings = {
-  shop_name: "TechNest",
-  shop_phone: "+94 11 000 0000",
-  shop_email: "hello@technest.lk",
-  shop_address: "128 Galle Road, Dehiwala, Colombo",
-  delivery_fee: 450,
-  free_delivery_from: 50000,
-  cod_enabled: true,
-  payhere_enabled: false,
-  bank_transfer_enabled: false,
-};
 
 /** Last six months of revenue, for the reports page. */
 export const monthlyRevenue = [

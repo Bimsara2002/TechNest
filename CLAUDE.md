@@ -24,13 +24,17 @@ first as its own change.
 
 ## Current state
 
-Roadmap **steps 1–2 are done** and **step 3's SQL is written but may not have been
-run yet**. Tailwind is active, every route in the page map exists, the navbar/footer
-and design system are real, and the build is clean.
+Roadmap **steps 1–2 and 4 are done**. **Step 3's SQL is written but has not been run
+against the live project** — as of the last check every table returned
+`PGRST205 Could not find the table`, so the database is still empty. Tailwind is
+active, every route in the page map exists, the navbar/footer and design system are
+real, and the build is clean.
 
-Before writing any data code, check whether the database actually exists: if
-`.env` is missing or `src/lib/supabase.js` throws, the Supabase project has not
-been set up. `supabase/README.md` has the steps.
+Before writing any data code, check whether the tables actually exist. A
+`PGRST205`/`42P01` error means the migrations have not been run, not that the query
+is wrong — `isSetupError()` in `src/lib/supabaseErrors.js` detects exactly that and
+every screen turns it into "run the migrations" rather than "something went wrong".
+`supabase/README.md` has the steps; `ADMIN.md` is the admin walkthrough.
 
 - **Pages are still placeholders.** Every file in `src/pages` except `Home` and
   `NotFound` renders `<PagePlaceholder>` listing what that page owes. Replacing one
@@ -38,10 +42,24 @@ been set up. `supabase/README.md` has the steps.
 - **`src/lib/sampleProducts.js` is temporary** and feeds the home page. Delete it at
   step 5 once products come from Supabase through `src/hooks` (which does not exist
   yet — create it when first needed).
-- **No auth and no route guards.** The routes the guide marks "login needed"
-  (`/checkout`, `/order-success/:id`, `/orders`, `/profile`, `/wishlist`) and the
-  entire `/admin` branch are currently open to anyone. Step 4 adds the guards.
-  Row Level Security already blocks the *data*; only the screens are unguarded.
+- **Auth is wired (step 4).** Supabase Auth through `src/lib/auth.js` and
+  `src/hooks/useAuth.js`. The routes the guide marks "login needed" sit inside
+  `<RequireAuth>` and the whole `/admin` branch inside `<RequireAdmin>`, both
+  layout routes in `src/App.jsx` — so a page added inside a branch is guarded by
+  default rather than by memory. Use `useAuth()`, which does not report
+  `isPending: false` until the *role* is known; reading session and role as two
+  separate queries makes a guard bounce a signed-in admin to `/login`.
+- **Admin is decided by the database, not the client.** `admin_allowlist`
+  (migration `0004`) has RLS on and no policies, so nothing client-side can read
+  it; the sign-up trigger sets `role` from it. `role` and `blocked` are not in the
+  column grants for `authenticated`, so they are changed only through
+  `admin_set_role()` / `admin_set_blocked()`, which re-check `is_admin()`
+  server-side. Never add a code path that writes `profiles.role` directly.
+- **Admin screens are half on real data.** Customers, Messages, Coupons, Banners
+  and Settings read and write Supabase via `src/lib/admin.js` + `src/hooks/useAdmin.js`.
+  Dashboard, Products, Inventory, Categories, Orders, Reviews and Reports still use
+  the sample arrays because the catalogue is not in Supabase until step 5. Do not
+  wire one of those to Supabase on its own — moving products moves the storefront too.
 - **All product pictures go through `ProductImage`**, which falls back in order:
   `image_url` (Supabase Storage) → its own slug file → a legacy `image` key →
   a brand/category stand-in → the drawn `ProductArt`. Never put a bare `<img>`
@@ -75,7 +93,7 @@ The layering that matters, because it is a hard rule rather than a convention:
 ```
 src/lib/        Supabase client + raw data functions. The ONLY place
                 supabase.from(...) / .auth / .storage may be called.
-                Also queryClient.js and format.js.
+                Also queryClient.js, format.js and supabaseErrors.js.
 src/hooks/      TanStack Query wrappers (useQuery/useMutation) around src/lib.
 src/store/      Zustand stores for client-only state (cart, UI).
 src/pages/      Customer route components.
@@ -202,6 +220,11 @@ Vite inlines every `VITE_`-prefixed variable into the client bundle as plain tex
 **a `VITE_` variable is public by definition.** Only the Supabase URL and the **anon**
 key belong there, and they are only safe because Row Level Security is enabled on the
 tables — so any new table needs RLS policies, not trust in the client.
+
+`VITE_SUPABASE_URL` is the project origin **with no path**. supabase-js appends
+`/rest/v1`, `/auth/v1` and so on itself, so a URL ending in `/rest/v1` makes every
+request 404 with "Invalid path specified in request URL" — which reads like a bad
+key. `src/lib/supabase.js` throws on it rather than letting it waste an afternoon.
 
 A service-role key, or any other server-side secret, must never appear in a `VITE_`
 variable, in `src/`, or in a committed file. Work that genuinely needs elevated

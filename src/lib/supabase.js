@@ -13,6 +13,18 @@ if (!url || !anonKey) {
   );
 }
 
+// An easy and expensive mistake: copying the REST endpoint out of the Supabase
+// dashboard instead of the project URL. supabase-js appends its own paths, so
+// ".../rest/v1" sends queries to /rest/v1/rest/v1/... and sign-ins to
+// /rest/v1/auth/v1/..., and every single one fails with "Invalid path
+// specified in request URL" - which reads like a bad key, not a bad URL.
+if (/\/(rest|auth|storage|functions)\/v\d/.test(url)) {
+  throw new Error(
+    `VITE_SUPABASE_URL must be the project URL only, with no path: got "${url}". ` +
+      `Use "${new URL(url).origin}" instead.`,
+  );
+}
+
 /**
  * The one Supabase client for the whole app.
  *

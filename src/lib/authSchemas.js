@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 /**
- * Account form rules. Written once here and reused by the forms; Supabase Auth
- * and the database policies are what actually enforce them at step 4.
+ * Account form rules. Written once here and reused by the forms.
+ *
+ * These are for the person filling the form in: the real enforcement is
+ * Supabase Auth (password length, address format, duplicate accounts) and the
+ * database policies. Loosening a rule here never grants anything.
  */
 
 const email = z.string().trim().min(1, "Email is required").email("Enter a valid email address");
@@ -30,6 +33,13 @@ export const registerSchema = z
   });
 
 export const forgotSchema = z.object({ email });
+
+export const resetPasswordSchema = z
+  .object({ password, confirm: z.string() })
+  .refine((values) => values.password === values.confirm, {
+    message: "Passwords do not match",
+    path: ["confirm"],
+  });
 
 export const profileSchema = z.object({
   full_name: z.string().trim().min(3, "Please enter your full name"),

@@ -1,5 +1,5 @@
 -- TechNest row level security
--- Run after 0001_schema.sql.
+-- Run after 20261014090000_schema.sql.
 --
 -- Rule of thumb: the React app decides what to *show*; these policies decide
 -- what anyone can actually *read or write*. Nothing below trusts the client.

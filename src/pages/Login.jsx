@@ -1,26 +1,56 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
-import AuthShell, { AuthNotice } from "../components/AuthShell.jsx";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import AuthShell, { AuthError } from "../components/AuthShell.jsx";
 import Button from "../components/ui/Button.jsx";
 import Field, { Input } from "../components/ui/Field.jsx";
+import { LoadingState } from "../components/ui/States.jsx";
 import { loginSchema } from "../lib/authSchemas.js";
+import { useAuth, useSignIn } from "../hooks/useAuth.js";
 import { useToast } from "../store/toastStore.js";
 
 export default function Login() {
   const toast = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isSignedIn, isAdmin, isPending } = useAuth();
+  const signIn = useSignIn();
+
+  // Set by RequireAuth / RequireAdmin when they turned someone away, so a
+  // successful sign-in resumes where they were going.
+  const from = location.state?.from ?? null;
+  const wantedAdmin = typeof from === "string" && from.startsWith("/admin");
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({ resolver: zodResolver(loginSchema), mode: "onBlur" });
 
-  const onSubmit = () => toast("Sign in arrives in roadmap step 4", "info");
+  if (isPending) return <LoadingState label="Checking your account" />;
+
+  // Already signed in: nothing to do here. Admins go to the dashboard, which
+  // is almost always why an admin opens this page.
+  if (isSignedIn) return <Navigate to={from ?? (isAdmin ? "/admin" : "/")} replace />;
+
+  const onSubmit = (values) =>
+    signIn.mutate(values, {
+      onSuccess: ({ profile }) => {
+        toast(`Welcome back${profile?.full_name ? `, ${profile.full_name}` : ""}`);
+        navigate(from ?? (profile?.role === "admin" ? "/admin" : "/"), {
+          replace: true,
+        });
+      },
+    });
 
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to track your orders and check out faster."
+      title={wantedAdmin ? "Sign in to manage the shop" : "Welcome back"}
+      subtitle={
+        wantedAdmin
+          ? "The admin area needs the shop's own account."
+          : "Sign in to track your orders and check out faster."
+      }
       footer={
         <>
           New to TechNest?{" "}
@@ -31,13 +61,19 @@ export default function Login() {
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        <AuthError error={signIn.error} />
+
         <Field label="Email" error={errors.email?.message} required>
           <Input {...register("email")} type="email" autoComplete="email" />
         </Field>
 
         <div>
           <Field label="Password" error={errors.password?.message} required>
-            <Input {...register("password")} type="password" autoComplete="current-password" />
+            <Input
+              {...register("password")}
+              type="password"
+              autoComplete="current-password"
+            />
           </Field>
           <div className="mt-2 text-right">
             <Link
@@ -49,12 +85,10 @@ export default function Login() {
           </div>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          Sign in
+        <Button type="submit" disabled={signIn.isPending} className="w-full">
+          {signIn.isPending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
-
-      <AuthNotice />
     </AuthShell>
   );
 }

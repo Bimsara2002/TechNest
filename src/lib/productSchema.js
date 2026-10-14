@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Admin product form rules. Mirrors the constraints in
- * supabase/migrations/0001_schema.sql, so the browser rejects what the
+ * supabase/migrations/20261014090000_schema.sql, so the browser rejects what the
  * database would reject anyway — but the database stays the real enforcement.
  */
 

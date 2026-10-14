@@ -35,14 +35,35 @@ export default function AuthShell({ title, subtitle, children, footer }) {
 }
 
 /**
- * Shown while the real Supabase Auth wiring is still ahead (roadmap step 4),
- * so these forms never look like they signed someone in when they did not.
+ * Whatever the server refused, above the fields rather than beside one of them
+ * - "that email and password do not match" belongs to the form, not to the
+ * password box. Renders nothing when there is no error, so it can sit
+ * unconditionally at the top of a form.
  */
-export function AuthNotice() {
+export function AuthError({ error }) {
+  if (!error) return null;
+
   return (
-    <p className="mt-5 rounded-xl bg-amber-50 px-3.5 py-3 text-xs leading-relaxed text-amber-800 ring-1 ring-amber-200">
-      Accounts are not connected yet — this form validates your details but
-      cannot sign you in until Supabase Auth is wired up in roadmap step 4.
+    <p
+      role="alert"
+      className="animate-shake rounded-xl bg-rose-50 px-3.5 py-3 text-sm font-medium text-rose-700 ring-1 ring-rose-200"
+    >
+      {error.message}
     </p>
+  );
+}
+
+/** The matching confirmation, for "check your email" style outcomes. */
+export function AuthSuccess({ title, children }) {
+  return (
+    <div
+      role="status"
+      className="animate-scale-in rounded-xl bg-emerald-50 px-3.5 py-3 ring-1 ring-emerald-200"
+    >
+      <p className="text-sm font-semibold text-emerald-900">{title}</p>
+      {children ? (
+        <p className="mt-1 text-sm leading-relaxed text-emerald-800">{children}</p>
+      ) : null}
+    </div>
   );
 }

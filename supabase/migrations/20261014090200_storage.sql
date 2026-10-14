@@ -1,5 +1,5 @@
 -- TechNest storage
--- Run after 0002_policies.sql.
+-- Run after 20261014090100_policies.sql.
 
 -- Product photos are public to read: they appear on the storefront for guests,
 -- and signed URLs for every tile would be slow and pointless. Writes are
