@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import ProductImage from "./ProductImage.jsx";
+import WishlistButton from "./WishlistButton.jsx";
 import Tilt from "./ui/Tilt.jsx";
 import Badge, { StockBadge } from "./ui/Badge.jsx";
 import { CartIcon, StarIcon } from "./icons.jsx";
@@ -40,6 +41,8 @@ export default function ProductCard({ product, eager = false }) {
           {hasDiscount ? <Badge tone="danger">-{percentOff}%</Badge> : null}
           <StockBadge stock={product.stock} />
         </div>
+
+        <WishlistButton product={product} className="depth-md absolute right-3 top-3" />
 
         <div className="flex flex-1 flex-col p-4 transform-3d">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">

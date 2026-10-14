@@ -43,9 +43,17 @@ been set up. `supabase/README.md` has the steps.
   entire `/admin` branch are currently open to anyone. Step 4 adds the guards.
   Row Level Security already blocks the *data*; only the screens are unguarded.
 - **All product pictures go through `ProductImage`**, which falls back in order:
-  `product.image_url` (Supabase Storage) → a bundled local photo → the drawn
-  `ProductArt` placeholder. Never put a bare `<img>` or `ProductArt` in a page;
-  use this component so the fallback chain stays in one place.
+  `image_url` (Supabase Storage) → its own slug file → a legacy `image` key →
+  a brand/category stand-in → the drawn `ProductArt`. Never put a bare `<img>`
+  or `ProductArt` in a page; use this component so the chain stays in one place.
+- **To give a product its own photo, drop a file into `src/assets/products/`
+  named after its slug** (`acer-swift-go-14-oled.webp`) — `import.meta.glob`
+  picks it up with no code change. `npm run photos:todo` prints every product
+  still missing one, with the exact filename. Do not hand-write imports for
+  product photos; that list is generated now.
+- **Only `image_url` and the slug file are guaranteed to show the real
+  product.** Brand and category stand-ins are approximations — never describe
+  them to the user as if they were the actual model.
 - **Images are pre-optimised WebP in `src/assets/`.** New photos should be resized
   and converted before committing (the hero went from 2 MB PNG to 44 KB WebP).
   Do not commit multi-megabyte originals — most customers are on mobile data.

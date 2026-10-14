@@ -6,6 +6,16 @@ const rupees = new Intl.NumberFormat("en-LK", { maximumFractionDigits: 0 });
  */
 export const formatPrice = (amount) => `Rs. ${rupees.format(amount ?? 0)}`;
 
+/**
+ * Short form for chart axes, where "Rs. 2,640,000" would collide with its
+ * neighbours. Full precision still appears in tooltips and the table view.
+ */
+export const formatCompactPrice = (amount) => {
+  if (Math.abs(amount) >= 1_000_000) return `Rs. ${(amount / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(amount) >= 1_000) return `Rs. ${Math.round(amount / 1_000)}k`;
+  return `Rs. ${amount}`;
+};
+
 const dateFormatter = new Intl.DateTimeFormat("en-LK", {
   year: "numeric",
   month: "short",

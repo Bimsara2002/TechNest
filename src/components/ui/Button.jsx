@@ -20,10 +20,22 @@ export default function Button({
   className = "",
   to,
   href,
+  disabled,
   children,
   ...rest
 }) {
   const classes = `${base} ${variants[variant]} ${className}`;
+
+  // A disabled link is not a thing: `disabled` on an <a> is ignored by the
+  // browser, so it would still navigate while looking greyed out. Render a
+  // real disabled <button> instead.
+  if (disabled) {
+    return (
+      <button type="button" disabled className={classes} {...rest}>
+        {children}
+      </button>
+    );
+  }
 
   if (to) {
     return (
@@ -42,7 +54,7 @@ export default function Button({
   }
 
   return (
-    <button className={classes} {...rest}>
+    <button className={classes} disabled={disabled} {...rest}>
       {children}
     </button>
   );

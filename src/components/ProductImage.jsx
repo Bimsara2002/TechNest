@@ -1,31 +1,26 @@
 import ProductArt from "./art/ProductArt.jsx";
-
-import s21 from "../assets/products/galaxy-s21-ultra.webp";
-import s22 from "../assets/products/galaxy-s22-ultra.webp";
-import s23 from "../assets/products/galaxy-s23-ultra.webp";
-import s24 from "../assets/products/galaxy-s24-ultra.webp";
-import s25 from "../assets/products/galaxy-s25-ultra.webp";
+import { productPhotos, productSlug } from "../lib/productPhotos.js";
 
 /**
- * Local photos, keyed by the `image` field in sampleProducts. This map goes
- * away at step 5: real products carry an `image_url` from Supabase Storage,
- * which the component already prefers over anything local.
- */
-const localImages = {
-  "galaxy-s21-ultra": s21,
-  "galaxy-s22-ultra": s22,
-  "galaxy-s23-ultra": s23,
-  "galaxy-s24-ultra": s24,
-  "galaxy-s25-ultra": s25,
-};
-
-/**
- * One seam for every product picture in the app, in priority order:
- * a real uploaded photo, then a bundled local photo, then the drawn
- * placeholder. Pages never branch on which one exists.
+ * One seam for every product picture in the app. Resolution order:
+ *
+ *   1. `image_url`            a real photo uploaded through the admin area
+ *   2. its own slug file      src/assets/products/<brand>-<name>.webp
+ *   3. a legacy `image` key   the hand-named curated files
+ *   4. `imageSrc`             a brand or category stand-in
+ *   5. ProductArt            the drawn placeholder
+ *
+ * Steps 1 and 2 are the only ones guaranteed to show the actual product; the
+ * rest are stand-ins. Pages never branch on which applied — drop a correctly
+ * named file into src/assets/products/ and that product upgrades itself.
  */
 export default function ProductImage({ product, className = "", eager = false }) {
-  const src = product.image_url ?? localImages[product.image] ?? null;
+  const src =
+    product.image_url ??
+    productPhotos[productSlug(product)] ??
+    productPhotos[product.image] ??
+    product.imageSrc ??
+    null;
 
   if (src) {
     return (

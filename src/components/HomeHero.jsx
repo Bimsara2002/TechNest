@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import Container from "./ui/Container.jsx";
 import Button from "./ui/Button.jsx";
 import Tilt from "./ui/Tilt.jsx";
+import Magnetic from "./ui/Magnetic.jsx";
+import Spotlight from "./ui/Spotlight.jsx";
 import { ShieldIcon, TruckIcon } from "./icons.jsx";
 import heroWide from "../assets/hero-wide.webp";
 import heroNarrow from "../assets/hero-narrow.webp";
@@ -51,7 +53,7 @@ export default function HomeHero() {
           aria-hidden="true"
           fetchPriority="high"
           decoding="async"
-          className="absolute inset-0 size-full scale-110 object-cover will-change-transform [transform:translate3d(0,var(--py,0),0)]"
+          className="absolute inset-0 size-full scale-110 object-cover will-change-transform transform-[translate3d(0,var(--py,0),0)]"
         />
       </picture>
 
@@ -65,6 +67,7 @@ export default function HomeHero() {
         className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-brand-dark to-transparent"
       />
 
+      <Spotlight>
       <Container className="relative">
         <div className="grid items-center gap-10 py-16 xl:grid-cols-[1.1fr_1fr] xl:py-24">
           <div className="animate-fade-up">
@@ -83,7 +86,9 @@ export default function HomeHero() {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button to="/products">Shop now</Button>
+              <Magnetic strength={0.3}>
+                <Button to="/products">Shop now</Button>
+              </Magnetic>
               <Button
                 to="/products?category=laptops"
                 variant="secondary"
@@ -135,6 +140,7 @@ export default function HomeHero() {
           </div>
         </div>
       </Container>
+      </Spotlight>
     </section>
   );
 }

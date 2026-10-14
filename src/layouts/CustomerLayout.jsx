@@ -1,7 +1,9 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import AnnouncementBar from "../components/AnnouncementBar.jsx";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
+import Toaster from "../components/ui/Toaster.jsx";
 
 export default function CustomerLayout() {
   const { pathname } = useLocation();
@@ -21,6 +23,8 @@ export default function CustomerLayout() {
         Skip to content
       </a>
 
+      {/* Above the navbar on purpose: it scrolls away while the sticky nav stays */}
+      <AnnouncementBar />
       <Navbar />
 
       <main id="main" className="flex-1">
@@ -28,6 +32,7 @@ export default function CustomerLayout() {
       </main>
 
       <Footer />
+      <Toaster />
     </div>
   );
 }

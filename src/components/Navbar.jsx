@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import Container from "./ui/Container.jsx";
 import {
@@ -15,17 +15,25 @@ const links = [
   { to: "/products", label: "Shop" },
   { to: "/products?category=mobiles", label: "Mobiles" },
   { to: "/products?category=laptops", label: "Laptops" },
+  { to: "/products?category=audio", label: "Audio" },
   { to: "/contact", label: "Contact" },
+];
+
+const drawerLinks = [
+  ...links,
+  { to: "/orders", label: "My orders" },
+  { to: "/wishlist", label: "Wishlist" },
+  { to: "/login", label: "Sign in" },
 ];
 
 function CartButton({ count, className = "" }) {
   return (
     <Link
       to="/cart"
-      className={`relative inline-flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${className}`}
+      className={`group relative inline-flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${className}`}
       aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}
     >
-      <CartIcon className="size-5" />
+      <CartIcon className="size-5 transition-transform duration-300 group-hover:-translate-y-0.5" />
       {count > 0 ? (
         <span
           key={count}
@@ -38,12 +46,30 @@ function CartButton({ count, className = "" }) {
   );
 }
 
+/** Underline that grows from the centre, rather than a colour change alone. */
+const navLinkClass = ({ isActive }) =>
+  `group relative inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors ${
+    isActive ? "text-white" : "text-slate-300 hover:text-white"
+  }`;
+
+function NavUnderline({ isActive }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`absolute inset-x-3 bottom-1.5 h-0.5 origin-center rounded-full bg-brand transition-transform duration-300 ${
+        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+      }`}
+    />
+  );
+}
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(
     () => typeof window !== "undefined" && window.scrollY > 8,
   );
   const [term, setTerm] = useState("");
+  const progressRef = useRef(null);
   const count = useCartCount();
   const location = useLocation();
   const navigate = useNavigate();
@@ -76,11 +102,27 @@ export default function Navbar() {
     };
   }, [menuOpen]);
 
-  // Elevate the bar once the page scrolls, so it separates from the content.
+  // Elevation plus a reading-progress bar. The bar is a scaleX on a CSS custom
+  // property written inside rAF, so scrolling never re-renders React — only
+  // the boolean elevation flag does, and that changes at most once per sweep.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    let frame = 0;
+
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const ratio = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+        progressRef.current?.style.setProperty("--progress", String(ratio));
+        setScrolled(window.scrollY > 8);
+      });
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const submitSearch = (event) => {
@@ -91,17 +133,17 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-40 bg-brand-dark text-white transition-shadow duration-300 ${
-        scrolled ? "shadow-lg shadow-brand-dark/20" : ""
+      className={`sticky top-0 z-40 bg-brand-dark/95 text-white backdrop-blur-md transition-shadow duration-300 ${
+        scrolled ? "shadow-lg shadow-brand-dark/30" : ""
       }`}
     >
       <Container>
         <div className="flex items-center gap-2 py-2">
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center gap-2 pr-2 text-lg font-bold tracking-tight"
+            className="group inline-flex min-h-11 items-center gap-2 pr-2 text-lg font-bold tracking-tight"
           >
-            <Logo className="size-8" />
+            <Logo className="size-8 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110" />
             <span>
               Tech<span className="text-brand">Nest</span>
             </span>
@@ -112,39 +154,37 @@ export default function Navbar() {
             <ul className="flex items-center gap-1">
               {links.map((link) => (
                 <li key={link.label}>
-                  <NavLink
-                    to={link.to}
-                    className={({ isActive }) =>
-                      `inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors ${
-                        isActive ? "text-brand" : "text-slate-200 hover:bg-white/10 hover:text-white"
-                      }`
-                    }
-                  >
-                    {link.label}
+                  <NavLink to={link.to} className={navLinkClass} end={link.to === "/products"}>
+                    {({ isActive }) => (
+                      <>
+                        {link.label}
+                        <NavUnderline isActive={isActive} />
+                      </>
+                    )}
                   </NavLink>
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* Search: inline from tablet up, full width row on phones */}
+          {/* Search: inline from tablet up, full-width row on phones */}
           <form
             onSubmit={submitSearch}
             role="search"
-            className="ml-auto hidden md:block md:w-56 xl:w-72"
+            className="ml-auto hidden md:block md:w-52 xl:w-72"
           >
             <label className="sr-only" htmlFor="site-search">
               Search products
             </label>
-            <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <div className="group relative">
+              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand" />
               <input
                 id="site-search"
                 type="search"
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
                 placeholder="Search products"
-                className="h-11 w-full rounded-xl bg-white/10 pl-9 pr-3 text-sm text-white placeholder:text-slate-400 transition-colors focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-brand"
+                className="h-11 w-full rounded-xl bg-white/10 pl-9 pr-3 text-sm text-white placeholder:text-slate-400 transition-all duration-300 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-brand xl:focus:w-80"
               />
             </div>
           </form>
@@ -152,7 +192,7 @@ export default function Navbar() {
           <div className="ml-auto flex items-center gap-1 md:ml-2">
             <Link
               to="/login"
-              className="hidden size-11 items-center justify-center rounded-xl transition-colors hover:bg-white/10 md:inline-flex"
+              className="hidden size-11 items-center justify-center rounded-xl transition-all hover:bg-white/10 active:scale-90 md:inline-flex"
               aria-label="Account"
             >
               <UserIcon className="size-5" />
@@ -163,7 +203,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="inline-flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-white/10 xl:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-xl transition-all hover:bg-white/10 active:scale-90 xl:hidden"
               aria-label="Open menu"
               aria-expanded={menuOpen}
             >
@@ -177,8 +217,8 @@ export default function Navbar() {
           <label className="sr-only" htmlFor="site-search-mobile">
             Search products
           </label>
-          <div className="relative">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <div className="group relative">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand" />
             <input
               id="site-search-mobile"
               type="search"
@@ -190,6 +230,17 @@ export default function Navbar() {
           </div>
         </form>
       </Container>
+
+      {/* Reading progress, pinned to the bottom edge of the bar.
+          Written as `transform` rather than Tailwind's scale-x utility: v4
+          compiles that to the standalone `scale` property, which
+          transition-transform does not animate. */}
+      <div
+        ref={progressRef}
+        aria-hidden="true"
+        style={{ "--progress": 0, transform: "scaleX(var(--progress))" }}
+        className="h-0.5 origin-left bg-linear-to-r from-brand to-brand-100 transition-transform duration-150 ease-out"
+      />
 
       {/* Mobile drawer */}
       {menuOpen ? (
@@ -206,11 +257,14 @@ export default function Navbar() {
             className="animate-slide-in absolute right-0 top-0 flex h-full w-72 max-w-[85%] flex-col bg-brand-dark shadow-2xl"
           >
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="font-semibold">Menu</span>
+              <span className="inline-flex items-center gap-2 font-semibold">
+                <Logo className="size-7" />
+                Menu
+              </span>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
-                className="inline-flex size-11 items-center justify-center rounded-xl transition-colors hover:bg-white/10"
+                className="inline-flex size-11 items-center justify-center rounded-xl transition-all hover:bg-white/10 active:scale-90"
                 aria-label="Close menu"
               >
                 <CloseIcon className="size-5" />
@@ -218,22 +272,27 @@ export default function Navbar() {
             </div>
 
             <ul className="flex-1 overflow-y-auto px-2 py-2">
-              {[...links, { to: "/orders", label: "My orders" }, { to: "/login", label: "Sign in" }].map(
-                (link) => (
-                  <li key={link.label}>
-                    <NavLink
-                      to={link.to}
-                      className={({ isActive }) =>
-                        `flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors ${
-                          isActive ? "bg-brand text-white" : "text-slate-200 hover:bg-white/10"
-                        }`
-                      }
-                    >
-                      {link.label}
-                    </NavLink>
-                  </li>
-                ),
-              )}
+              {drawerLinks.map((link, index) => (
+                <li
+                  key={link.label}
+                  className="animate-slide-in"
+                  // Staggered entrance, capped so the last item never lags.
+                  style={{ animationDelay: `${Math.min(index * 45, 300)}ms` }}
+                >
+                  <NavLink
+                    to={link.to}
+                    className={({ isActive }) =>
+                      `flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-all ${
+                        isActive
+                          ? "bg-brand text-white"
+                          : "text-slate-200 hover:bg-white/10 hover:pl-4"
+                      }`
+                    }
+                  >
+                    {link.label}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
 
             <p className="border-t border-white/10 px-4 py-3 text-xs text-slate-400">

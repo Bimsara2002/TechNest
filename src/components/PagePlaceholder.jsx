@@ -1,5 +1,5 @@
 import Container from "./ui/Container.jsx";
-import Reveal from "./ui/Reveal.jsx";
+import Reveal3D from "./ui/Reveal3D.jsx";
 import Button from "./ui/Button.jsx";
 
 /**
@@ -10,7 +10,7 @@ import Button from "./ui/Button.jsx";
 export default function PagePlaceholder({ title, summary, features = [], step }) {
   return (
     <Container className="py-10 xl:py-14">
-      <Reveal className="max-w-3xl">
+      <Reveal3D className="max-w-3xl">
         {step ? (
           <span className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-100">
             Roadmap step {step}
@@ -22,10 +22,10 @@ export default function PagePlaceholder({ title, summary, features = [], step })
         {summary ? (
           <p className="mt-2 max-w-prose leading-relaxed text-slate-600">{summary}</p>
         ) : null}
-      </Reveal>
+      </Reveal3D>
 
       {features.length > 0 ? (
-        <Reveal className="mt-8">
+        <Reveal3D className="mt-8">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Planned for this page
           </h2>
@@ -43,14 +43,14 @@ export default function PagePlaceholder({ title, summary, features = [], step })
               </li>
             ))}
           </ul>
-        </Reveal>
+        </Reveal3D>
       ) : null}
 
-      <Reveal className="mt-8">
+      <Reveal3D className="mt-8">
         <Button to="/" variant="secondary">
           Back to home
         </Button>
-      </Reveal>
+      </Reveal3D>
     </Container>
   );
 }

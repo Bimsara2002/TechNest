@@ -167,6 +167,36 @@ export const StarIcon = ({ className = "size-6", filled = false, ...rest }) => (
   </svg>
 );
 
+export const ArrowUpIcon = (props) => (
+  <Svg {...props}>
+    <path d="M12 19.5V5M5.5 11.5 12 5l6.5 6.5" />
+  </Svg>
+);
+
+/* ---- Social ------------------------------------------------------------
+   Filled marks rather than strokes, so they read at the small size used in
+   the footer. */
+
+export const FacebookIcon = ({ className = "size-5", ...rest }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className} {...rest}>
+    <path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6c-.29-.04-1.27-.12-2.41-.12-2.38 0-4.01 1.45-4.01 4.12v2.3H7.6V13h2.67v8z" />
+  </svg>
+);
+
+export const WhatsAppIcon = ({ className = "size-5", ...rest }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className} {...rest}>
+    <path d="M12.04 2.5a9.4 9.4 0 0 0-8.1 14.1L2.5 21.5l5.05-1.32A9.4 9.4 0 1 0 12.04 2.5m0 1.74a7.66 7.66 0 1 1-3.9 14.25l-.28-.17-2.99.78.8-2.92-.19-.3A7.66 7.66 0 0 1 12.04 4.24m-3.3 3.6c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.54 2.02.78 2.43.63 2.87.59.44-.04 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28s-1.42-.7-1.64-.78c-.22-.08-.38-.12-.54.12s-.62.78-.76.94c-.14.16-.28.18-.52.06s-1.02-.38-1.94-1.2c-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42s-.54-1.3-.74-1.78c-.19-.46-.39-.4-.54-.41z" />
+  </svg>
+);
+
+export const InstagramIcon = ({ className = "size-5", ...rest }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true" className={className} {...rest}>
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="3.8" />
+    <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 /* ---- Brand mark -------------------------------------------------------- */
 
 /**

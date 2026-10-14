@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
+import Toaster from "../components/ui/Toaster.jsx";
 
 /**
  * Shell for /admin. Sidebar on laptop, horizontal scrolling tab strip on mobile.
@@ -60,6 +61,8 @@ export default function AdminLayout() {
       <main className="flex-1 bg-slate-50">
         <Outlet />
       </main>
+
+      <Toaster />
     </div>
   );
 }
