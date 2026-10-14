@@ -60,7 +60,17 @@ export default function Login() {
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        // Clear the server's answer as soon as the form changes. Otherwise
+        // "that email and password do not match" sits above a field that now
+        // says "Email is required", and the two contradict each other.
+        onChange={() => {
+          if (signIn.isError) signIn.reset();
+        }}
+        noValidate
+        className="space-y-4"
+      >
         <AuthError error={signIn.error} />
 
         <Field label="Email" error={errors.email?.message} required>

@@ -58,8 +58,17 @@ const authMessages = {
   email_exists: "That email already has an account. Try signing in.",
   weak_password: "Pick a longer password — at least 8 characters.",
   same_password: "That is already your password. Choose a different one.",
+  // Supabase rejected the address itself. Worth saying so plainly, because the
+  // form already checked the format - this is the server disagreeing, not a typo.
+  email_address_invalid:
+    "Supabase will not accept that email address. Try a different one.",
+  email_address_not_authorized:
+    "This project is not allowed to send email to that address.",
+  // Confirmation and reset emails share one small hourly quota on the free
+  // plan, and every sign-up attempt spends one.
   over_email_send_rate_limit:
-    "Too many emails just went out to that address. Wait a minute and try again.",
+    "Too many confirmation emails have been sent. Wait an hour, or turn off " +
+    "“Confirm email” in Supabase so sign-up stops sending them.",
   over_request_rate_limit: "Too many attempts. Wait a minute and try again.",
   signup_disabled: "New accounts are turned off in this Supabase project.",
   validation_failed: "Check the details you entered and try again.",

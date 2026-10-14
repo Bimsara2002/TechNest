@@ -73,7 +73,14 @@ export default function Register() {
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        onChange={() => {
+          if (signUp.isError) signUp.reset();
+        }}
+        noValidate
+        className="space-y-4"
+      >
         <AuthError error={signUp.error} />
 
         <Field label="Full name" error={errors.full_name?.message} required>
